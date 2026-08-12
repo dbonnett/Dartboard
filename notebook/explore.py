@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 
 # start with all possible numbers you can score:
-numbers = list(range(1, 51))
+numbers = list(range(0, 51))
 for x in [23, 29, 31, 35, 37, 41, 43, 44, 46, 47, 49]:
   numbers.remove(x)
 # there are 39 possible scores between 1-50  (we'll add zero manually to deal with edge cases)
@@ -13,31 +13,23 @@ twoDartCombos = 0
 threeDartCombos = 0
 listOfCombos = []
 instances = {n: 0 for n in numbers}
-instances[0] = 0
 
 # winning with 1 dart
 listOfCombos.append([50])
 oneDartCombos += 1
-# zero edge cases
-listOfCombos.extend([[0, 50], [0, 0, 50]])
-twoDartCombos += 1
-threeDartCombos += 1
-instances[50] += 3
+instances[50] += 1
 
 # winning with 2 scoring darts
 for i in numbers:
   if (50 - i) in numbers:
-    listOfCombos.extend([[i, 50-i], [0, i, 50-i], [i, 0, 50-i]])
+    listOfCombos.append([i, 50-i])
     twoDartCombos += 1
-    threeDartCombos += 2
-    instances[i] += 3
-    instances[50-i] += 3
-    instances[0] += 2
+    instances[i] += 1
+    instances[50-i] += 1
   # hitting bullseye second
   if (i < 50):
-    listOfCombos.extend([[i, 50], [0, i, 50], [i, 0, 50]])
+    listOfCombos.append([i, 50])
     twoDartCombos += 1
-    threeDartCombos += 2
     instances[i] += 1
     instances[50] += 1
 
@@ -57,6 +49,17 @@ for i in numbers:
       instances[j] += 1
       instances[50] += 1
 
+#remove combos with trailing zeros
+for l in listOfCombos:
+  if l[-1] == 0:
+    if len(l) == 3:
+      threeDartCombos -= 1
+    if len(l) == 2:
+      twoDartCombos -= 1
+    for i in l:
+      instances[i] -= 1
+    listOfCombos.remove(l)
+
 print(f"Ways to win with one dart: {oneDartCombos}, two darts: {twoDartCombos}, three darts: {threeDartCombos}, \ntotal combos: {oneDartCombos + twoDartCombos + threeDartCombos}")
 print(f"list of combos length: {len(listOfCombos)}")
 # test that the instances dict and combo counts add up:
@@ -72,4 +75,4 @@ plt.bar(inst_copy.keys(), inst_copy.values())
 plt.xlabel("Score")
 plt.ylabel("Occurences")
 plt.title("Individual dart score occurences in all possible winning games\n(excluding 50)")
-plt.show()
+#plt.show()
