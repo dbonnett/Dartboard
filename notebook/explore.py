@@ -27,7 +27,7 @@ for i in numbers:
     instances[i] += 1
     instances[50-i] += 1
   # hitting bullseye second
-  if (i < 50):
+  if (0 < i < 50):
     listOfCombos.append([i, 50])
     twoDartCombos += 1
     instances[i] += 1
@@ -42,7 +42,7 @@ for i in numbers:
       instances[j] += 1
       instances[50-i-j] += 1
     # hitting bullseye third
-    if (i + j < 50):
+    if (0 < i + j < 50):
       listOfCombos.append([i, j, 50])
       threeDartCombos += 1
       instances[i] += 1
@@ -50,6 +50,7 @@ for i in numbers:
       instances[50] += 1
 
 #remove combos with trailing zeros
+listOfCombosCopy = []
 for l in listOfCombos:
   if l[-1] == 0:
     if len(l) == 3:
@@ -58,15 +59,18 @@ for l in listOfCombos:
       twoDartCombos -= 1
     for i in l:
       instances[i] -= 1
-    listOfCombos.remove(l)
+  else:
+    listOfCombosCopy.append(l)
 
 print(f"Ways to win with one dart: {oneDartCombos}, two darts: {twoDartCombos}, three darts: {threeDartCombos}, \ntotal combos: {oneDartCombos + twoDartCombos + threeDartCombos}")
-print(f"list of combos length: {len(listOfCombos)}")
+print(f"list of combos length: {len(listOfCombosCopy)}")
 # test that the instances dict and combo counts add up:
 dartsThrown = 0
-for l in listOfCombos:
+for l in listOfCombosCopy:
   dartsThrown += len(l)
 print(f"Total darts thrown:\n1 * oneDartCombos = {oneDartCombos}\n2 * twoDartCombos = {twoDartCombos * 2}\n3 * threeDartCombos = {threeDartCombos*3}\n total instances: {oneDartCombos + (2*twoDartCombos) + (3*threeDartCombos)}\nDarts thrown in 'instances' dict: {dartsThrown}")
+#for l in listOfCombosCopy:
+  #print(l)
 
 # find most popular numbers found in combination (besides 50)
 inst_copy = instances
@@ -75,4 +79,4 @@ plt.bar(inst_copy.keys(), inst_copy.values())
 plt.xlabel("Score")
 plt.ylabel("Occurences")
 plt.title("Individual dart score occurences in all possible winning games\n(excluding 50)")
-#plt.show()
+plt.show()
