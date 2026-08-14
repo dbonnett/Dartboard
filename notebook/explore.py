@@ -29,16 +29,16 @@ for i in numbers:
     if (0 < i + j < 50):
       listOfCombos.append([i, j, 50])
 
-#remove combos with trailing zeros
-listOfCombosCopy = []
+# remove combos with trailing zeros
+listOfCombosFinal = []
 for l in listOfCombos:
   if l[-1] != 0:
-    listOfCombosCopy.append(l)
+    listOfCombosFinal.append(l)
 # list of permutations complete ✅
 
 # find most popular numbers found in combination (besides 50)
 num_dict = {n: 0 for n in numbers}
-for l in listOfCombosCopy:
+for l in listOfCombosFinal:
   for i in l:
     num_dict[i] += 1
 del num_dict[50]
