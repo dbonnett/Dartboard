@@ -18,6 +18,8 @@ clockwise, matching how a real dartboard is numbered.
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.ndimage import gaussian_filter
+from notebook.explore import numbers as valid_numbers
+
 
 # ----------------------------------------------------------------------
 # 1. Dartboard geometry (standard mm dimensions, origin = board center)
@@ -73,13 +75,42 @@ cell_area = RES ** 2
 # ----------------------------------------------------------------------
 R = np.sqrt(X ** 2 + Y ** 2)
 number = segment_number(X, Y)
-target_mask = ((R >= TRIPLE_IN) & (R <= TRIPLE_OUT) & (number == 20)).astype(float)
+def single_region(n):
+  return ((number == n) & (R > OUTER_BULL_R) & (R < DOUBLE_IN) & ~((R > TRIPLE_IN) & (R < TRIPLE_OUT)))
+
+def double_region(n):
+  return ((number == n) & (R > DOUBLE_IN) & (R < DOUBLE_OUT))
+
+def triple_region(n):
+  return ((number == n) & (R > TRIPLE_IN) & (R < TRIPLE_OUT))
+
+def region(n):
+  if n not in valid_numbers:
+    raise ValueError("invalid input")
+  s = d = t = False
+  if n == 50:
+    return (R <= BULL_R)
+  if n == 25:
+    return (R <= OUTER_BULL_R)
+  if n <= 20:
+    s = True
+  if n % 2 == 0:
+    d = True
+  if n % 3 == 0:
+    t = True
+  return (
+    (R <= BULL_R) |
+    (s * single_region(n)) |
+    (d * double_region(n/2)) |
+    (t * triple_region(n/3))
+  )
+
+target_mask = region(33).astype(float)
 
 # ----------------------------------------------------------------------
 # 4. Your throw's spread -- REPLACE these with your own measured values (mm)
 # ----------------------------------------------------------------------
-sigma_x = 15.0
-sigma_y = 15.0
+sigma_x = sigma_y = 70.0
 
 # ----------------------------------------------------------------------
 # 5. METHOD A -- the direct, "by hand" way, for exactly ONE aim point.
@@ -138,7 +169,7 @@ theta_circ = np.linspace(0, 2 * np.pi, 200)
 ax.plot(DOUBLE_OUT * np.sin(theta_circ), DOUBLE_OUT * np.cos(theta_circ), 'w--', linewidth=0.8)
 ax.contour(X, Y, target_mask, levels=[0.5], colors='red', linewidths=1.2)
 
-ax.plot(best_x, best_y, 'r*', markersize=18, label='optimal aim point')
+ax.plot(best_x, best_y, '.', markersize=2, label='optimal aim point')
 ax.set_xlabel('x (mm)')
 ax.set_ylabel('y (mm)')
 ax.set_title('Probability of hitting target region, by aim point')

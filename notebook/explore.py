@@ -58,4 +58,4 @@ for bar in bars:
 plt.xlabel("Score")
 plt.ylabel("Occurences")
 plt.title("Individual dart score occurences in all possible winning games\n(excluding 50)")
-plt.show()
+#plt.show()
