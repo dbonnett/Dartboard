@@ -105,12 +105,12 @@ def region(n):
     (t * triple_region(n/3))
   )
 
-target_mask = region(33).astype(float)
+target_mask = region(21).astype(float)
 
 # ----------------------------------------------------------------------
 # 4. Your throw's spread -- REPLACE these with your own measured values (mm)
 # ----------------------------------------------------------------------
-sigma_x = sigma_y = 70.0
+sigma_x = sigma_y = 25.0
 
 # ----------------------------------------------------------------------
 # 5. METHOD A -- the direct, "by hand" way, for exactly ONE aim point.
@@ -118,6 +118,7 @@ sigma_x = sigma_y = 70.0
 #    target region. Slow if repeated for every aim point, but it's the
 #    ground truth, and it's exactly the process we described in words.
 # ----------------------------------------------------------------------
+"""
 def probability_at_aim(aim_x, aim_y, sigma_x, sigma_y, X, Y, mask, cell_area):
     density = (1.0 / (2 * np.pi * sigma_x * sigma_y)) * np.exp(
         -(((X - aim_x) ** 2) / (2 * sigma_x ** 2) + ((Y - aim_y) ** 2) / (2 * sigma_y ** 2))
@@ -128,7 +129,7 @@ def probability_at_aim(aim_x, aim_y, sigma_x, sigma_y, X, Y, mask, cell_area):
 test_aim = (0.0, 103.0)   # try aiming at the middle of the triple-20 bed (straight up, r~103mm)
 p_direct = probability_at_aim(*test_aim, sigma_x, sigma_y, X, Y, target_mask, cell_area)
 print(f"Method A (direct sum) at aim={test_aim}: {p_direct:.4f}")
-
+"""
 # ----------------------------------------------------------------------
 # 6. METHOD B -- the fast way: do that SAME sum for every possible aim
 #    point at once, by Gaussian-blurring the target mask. This computes an
@@ -138,9 +139,11 @@ sigma_px = (sigma_y / RES, sigma_x / RES)   # array axis 0 = y, axis 1 = x
 P = gaussian_filter(target_mask, sigma=sigma_px, mode='constant')
 
 # sanity check: Method B's value at the same test point should match Method A
+"""
 iy = np.argmin(np.abs(coords - test_aim[1]))
 ix = np.argmin(np.abs(coords - test_aim[0]))
 print(f"Method B (blurred grid) at same point:  {P[iy, ix]:.4f}")
+"""
 
 # ----------------------------------------------------------------------
 # 7. Find the best aim point
@@ -153,8 +156,31 @@ best_theta = np.degrees(np.arctan2(best_x, best_y)) % 360
 
 print(f"\nBest aim point: x={best_x:.1f} mm, y={best_y:.1f} mm")
 print(f"  (equivalently: r={best_r:.1f} mm, theta={best_theta:.1f} deg clockwise from top)")
-print(f"Probability of hitting the target region there: {best_p:.4f}")
-
+print(f"Probability of hitting the target region there: {best_p:.5f}")
+# ----------------------------------------------------------------------
+# 7b. Look up the probability at ANY specific aim point from the heatmap
+#     you already computed -- pass either (x, y) or (r, theta), not both.
+# ----------------------------------------------------------------------
+def probability_lookup(P, coords, x=None, y=None, r=None, theta=None):
+    """Nearest-grid-cell lookup of P at a single aim point.
+    theta is in degrees, 0 = straight up, clockwise-positive (matches the board)."""
+    if r is not None and theta is not None:
+        theta_rad = np.radians(theta)
+        x = r * np.sin(theta_rad)
+        y = r * np.cos(theta_rad)
+    elif x is None or y is None:
+        raise ValueError("Provide either (x, y) or (r, theta), not neither")
+ 
+    ix = np.argmin(np.abs(coords - x))
+    iy = np.argmin(np.abs(coords - y))
+    return P[iy, ix]
+ 
+ 
+# examples -- both describe the same physical point, so they should agree
+p_xy = probability_lookup(P, coords, x=0.0, y=103.0)
+p_polar = probability_lookup(P, coords, r=103.0, theta=0.0)
+print(f"\nLookup by (x,y):     {p_xy:.4f}")
+print(f"Lookup by (r,theta): {p_polar:.4f}")
 # ----------------------------------------------------------------------
 # 8. Plot
 # ----------------------------------------------------------------------

@@ -6,4 +6,10 @@ Vision:
 This means that to find the best shot 
 
 Starting fresh - given a prob dist we can definitely calculate the prob of winning given score after 2 darts. 
-The probability of winning based on where we aim with the second dart is the sum of all probabilities of landing in 
+The probability of winning based on where we aim with the second dart is the sum of all probabilities of landing in
+
+
+Next: function to find probability when inputing a certain point
+  Actually toward goal - find probabilities of each hitting each possible number for a given variance
+  need probability of winning if you have n to go on your 3rd dart (by calculating probability of success when aimed optimally for that last dart)
+  
