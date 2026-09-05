@@ -85,8 +85,6 @@ def triple_region(n):
   return ((number == n) & (R > TRIPLE_IN) & (R < TRIPLE_OUT))
 
 def region(n):
-  if n not in valid_numbers:
-    raise ValueError("invalid input")
   s = d = t = False
   if n == 50:
     return (R <= BULL_R)
@@ -182,8 +180,14 @@ p_polar = probability_lookup(P, coords, r=103.0, theta=0.0)
 print(f"\nLookup by (x,y):     {p_xy:.4f}")
 print(f"Lookup by (r,theta): {p_polar:.4f}")
 # ----------------------------------------------------------------------
-# 8. Plot
+# 8a. Table 1
 # ----------------------------------------------------------------------
+# Make a table containing the optimal aim point and win % for each 
+
+# ----------------------------------------------------------------------
+# 8b. Plot
+# ----------------------------------------------------------------------
+"""
 fig, ax = plt.subplots(figsize=(7, 7))
 im = ax.imshow(
     P, extent=[-GRID_HALF_WIDTH, GRID_HALF_WIDTH, -GRID_HALF_WIDTH, GRID_HALF_WIDTH],
@@ -204,3 +208,4 @@ ax.set_aspect('equal')
 plt.tight_layout()
 plt.savefig('dart_aim_heatmap.png', dpi=150)
 print("\nSaved heatmap to dart_aim_heatmap.png")
+"""
