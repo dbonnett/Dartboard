@@ -95,9 +95,10 @@ class AimResult:
 # DEFINE STD DEV HERE
 sigma_x = sigma_y = 25.0
 
-last_dart_table = {}
+third_dart_table = {}
 
-for i in range(11):
+# Creates table for all possible last dart optimizations
+for i in range(51):
   target_mask = region(i).astype(float)
 
   sigma_px = (sigma_y / RES, sigma_x / RES)
@@ -111,7 +112,7 @@ for i in range(11):
   best_p = P[best_iy, best_ix]
   best_r = np.hypot(best_x, best_y)
   best_theta = np.degrees(np.arctan2(best_x, best_y)) % 360
-  last_dart_table[i] = AimResult(
+  third_dart_table[i] = AimResult(
     best_x=best_x,
     best_y=best_y,
     best_p=best_p,
@@ -119,9 +120,33 @@ for i in range(11):
     best_theta=best_theta,
   )
 
-for i in range(10):
-  print(f"  (equivalently: r={last_dart_table[i].best_r:.1f} mm, theta={last_dart_table[i].best_theta:.1f} deg clockwise from top)")
-  print(f"Probability of hitting the target region there: {last_dart_table[i].best_p:.5f}")
+second_dart_table = {}
+for i in range(51):
+  target_mask = (third_dart_table[i].best_p * region(i)).astype(float)
+
+  sigma_px = (sigma_y / RES, sigma_x / RES)
+  P = gaussian_filter(target_mask, sigma=sigma_px, mode='constant')
+
+  # ----------------------------------------------------------------------
+  # 7. Find the best aim point
+  # ----------------------------------------------------------------------
+  best_iy, best_ix = np.unravel_index(np.argmax(P), P.shape)
+  best_x, best_y = X[best_iy, best_ix], Y[best_iy, best_ix]
+  best_p = P[best_iy, best_ix]
+  best_r = np.hypot(best_x, best_y)
+  best_theta = np.degrees(np.arctan2(best_x, best_y)) % 360
+  second_dart_table[i] = AimResult(
+    best_x=best_x,
+    best_y=best_y,
+    best_p=best_p,
+    best_r=best_r,
+    best_theta=best_theta,
+  )
+
+random_list = [0, 30, 15]
+
+for i in range(3):
+  print(f"Best aim point for {i}: angle: {second_dart_table[random_list[i]].best_theta} radius: {second_dart_table[random_list[i]].best_r} p: {second_dart_table[random_list[i]].best_p}")
 
 # ----------------------------------------------------------------------
 # 8b. Plot
