@@ -78,32 +78,56 @@ def region(n):
     (t * triple_region(n/3))
   )
 
-target_mask = region(23).astype(float)
-
 # ----------------------------------------------------------------------
 # 4. Define probability distribution
 # ----------------------------------------------------------------------
+
+from dataclasses import dataclass
+
+@dataclass
+class AimResult:
+    best_x: float
+    best_y: float
+    best_p: float
+    best_r: float = None
+    best_theta: float = None
+
+# DEFINE STD DEV HERE
 sigma_x = sigma_y = 25.0
-sigma_px = (sigma_y / RES, sigma_x / RES)
-P = gaussian_filter(target_mask, sigma=sigma_px, mode='constant')
 
-# ----------------------------------------------------------------------
-# 7. Find the best aim point
-# ----------------------------------------------------------------------
-best_iy, best_ix = np.unravel_index(np.argmax(P), P.shape)
-best_x, best_y = X[best_iy, best_ix], Y[best_iy, best_ix]
-best_p = P[best_iy, best_ix]
-best_r = np.hypot(best_x, best_y)
-best_theta = np.degrees(np.arctan2(best_x, best_y)) % 360
+last_dart_table = {}
 
-print(f"\nBest aim point: x={best_x:.1f} mm, y={best_y:.1f} mm")
-print(f"  (equivalently: r={best_r:.1f} mm, theta={best_theta:.1f} deg clockwise from top)")
-print(f"Probability of hitting the target region there: {best_p:.5f}")
+for i in range(11):
+  target_mask = region(i).astype(float)
+
+  sigma_px = (sigma_y / RES, sigma_x / RES)
+  P = gaussian_filter(target_mask, sigma=sigma_px, mode='constant')
+
+  # ----------------------------------------------------------------------
+  # 7. Find the best aim point
+  # ----------------------------------------------------------------------
+  best_iy, best_ix = np.unravel_index(np.argmax(P), P.shape)
+  best_x, best_y = X[best_iy, best_ix], Y[best_iy, best_ix]
+  best_p = P[best_iy, best_ix]
+  best_r = np.hypot(best_x, best_y)
+  best_theta = np.degrees(np.arctan2(best_x, best_y)) % 360
+  last_dart_table[i] = AimResult(
+    best_x=best_x,
+    best_y=best_y,
+    best_p=best_p,
+    best_r=best_r,
+    best_theta=best_theta,
+  )
+
+for i in range(10):
+  print(f"  (equivalently: r={last_dart_table[i].best_r:.1f} mm, theta={last_dart_table[i].best_theta:.1f} deg clockwise from top)")
+  print(f"Probability of hitting the target region there: {last_dart_table[i].best_p:.5f}")
 
 # ----------------------------------------------------------------------
 # 8b. Plot
 # ----------------------------------------------------------------------
 
+"""
 fig, ax = plt.subplots(figsize=(7, 7))
 im = ax.imshow(
     P, extent=[-GRID_HALF_WIDTH, GRID_HALF_WIDTH, -GRID_HALF_WIDTH, GRID_HALF_WIDTH],
@@ -124,3 +148,4 @@ ax.set_aspect('equal')
 plt.tight_layout()
 plt.savefig('dart_aim_heatmap.png', dpi=150)
 print("\nSaved heatmap to dart_aim_heatmap.png")
+"""
