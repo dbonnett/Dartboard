@@ -97,6 +97,8 @@ sigma_x = sigma_y = 25.0
 
 third_dart_table = {}
 
+target_mask = 0
+
 # Creates table for all possible last dart optimizations
 for i in range(51):
   target_mask = region(i).astype(float)
@@ -104,9 +106,6 @@ for i in range(51):
   sigma_px = (sigma_y / RES, sigma_x / RES)
   P = gaussian_filter(target_mask, sigma=sigma_px, mode='constant')
 
-  # ----------------------------------------------------------------------
-  # 7. Find the best aim point
-  # ----------------------------------------------------------------------
   best_iy, best_ix = np.unravel_index(np.argmax(P), P.shape)
   best_x, best_y = X[best_iy, best_ix], Y[best_iy, best_ix]
   best_p = P[best_iy, best_ix]
@@ -120,16 +119,15 @@ for i in range(51):
     best_theta=best_theta,
   )
 
+second_mask = 0
+for i in range(51):
+  second_mask += (third_dart_table[i].best_p * region[i]).astype(float)
+
 second_dart_table = {}
 for i in range(51):
-  target_mask = (third_dart_table[i].best_p * region(i)).astype(float)
-
   sigma_px = (sigma_y / RES, sigma_x / RES)
-  P = gaussian_filter(target_mask, sigma=sigma_px, mode='constant')
+  P = gaussian_filter(second_mask, sigma=sigma_px, mode='constant')
 
-  # ----------------------------------------------------------------------
-  # 7. Find the best aim point
-  # ----------------------------------------------------------------------
   best_iy, best_ix = np.unravel_index(np.argmax(P), P.shape)
   best_x, best_y = X[best_iy, best_ix], Y[best_iy, best_ix]
   best_p = P[best_iy, best_ix]
@@ -143,10 +141,15 @@ for i in range(51):
     best_theta=best_theta,
   )
 
+third_mask = 0
+for i in range(51):
+  third_mask += (second_dart_table[i].best_p * region[i]).astype(float)
+
 random_list = [0, 30, 15]
 
 for i in range(3):
-  print(f"Best aim point for {i}: angle: {second_dart_table[random_list[i]].best_theta} radius: {second_dart_table[random_list[i]].best_r} p: {second_dart_table[random_list[i]].best_p}")
+  score = second_dart_table[random_list[i]]
+  print(f"Best aim point for {i}: angle: {score.best_theta} radius: {score.best_r} p: {score.best_p}")
 
 # ----------------------------------------------------------------------
 # 8b. Plot
